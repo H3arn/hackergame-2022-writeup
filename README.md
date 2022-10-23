@@ -16,11 +16,98 @@
 
 ## 偷家
 
+解压，得到 `user` 家目录。然后用 vscode 打开文件夹，直接搜索 "flag". 
+
+
+
+### Vscode
+
+搜索结果中有一个 "DUGV.c", 注释第五行可以看到 flag. 
+
+
+
 ### Rclone
 
-在 `user/.config/rclone/rclone.conf` 有被 obscure 过的 pass
+在 `user/.config/rclone/rclone.conf` 出现 "flag2", 其中有被 obscure 过的 pass.
 
-丢进[这个](https://go.dev/play/p/IcRYDip3PnE)里面的程序，改掉 `YOUR PSEUDO-ENCRYPTED PASSWORD HERE` 就能得到结果
+丢进 [这个](https://go.dev/play/p/IcRYDip3PnE) 里面的程序，改掉 `YOUR PSEUDO-ENCRYPTED PASSWORD HERE` 就能得到结果。
+
+防止原链接失效，拷贝程序源码如下：
+
+```go
+package main
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/base64"
+	"errors"
+	"fmt"
+	"log"
+)
+
+// crypt internals
+var (
+	cryptKey = []byte{
+		0x9c, 0x93, 0x5b, 0x48, 0x73, 0x0a, 0x55, 0x4d,
+		0x6b, 0xfd, 0x7c, 0x63, 0xc8, 0x86, 0xa9, 0x2b,
+		0xd3, 0x90, 0x19, 0x8e, 0xb8, 0x12, 0x8a, 0xfb,
+		0xf4, 0xde, 0x16, 0x2b, 0x8b, 0x95, 0xf6, 0x38,
+	}
+	cryptBlock cipher.Block
+	cryptRand  = rand.Reader
+)
+
+// crypt transforms in to out using iv under AES-CTR.
+//
+// in and out may be the same buffer.
+//
+// Note encryption and decryption are the same operation
+func crypt(out, in, iv []byte) error {
+	if cryptBlock == nil {
+		var err error
+		cryptBlock, err = aes.NewCipher(cryptKey)
+		if err != nil {
+			return err
+		}
+	}
+	stream := cipher.NewCTR(cryptBlock, iv)
+	stream.XORKeyStream(out, in)
+	return nil
+}
+
+// Reveal an obscured value
+func Reveal(x string) (string, error) {
+	ciphertext, err := base64.RawURLEncoding.DecodeString(x)
+	if err != nil {
+		return "", fmt.Errorf("base64 decode failed when revealing password - is it obscured? %w", err)
+	}
+	if len(ciphertext) < aes.BlockSize {
+		return "", errors.New("input too short when revealing password - is it obscured?")
+	}
+	buf := ciphertext[aes.BlockSize:]
+	iv := ciphertext[:aes.BlockSize]
+	if err := crypt(buf, buf, iv); err != nil {
+		return "", fmt.Errorf("decrypt failed when revealing password - is it obscured? %w", err)
+	}
+	return string(buf), nil
+}
+
+// MustReveal reveals an obscured value, exiting with a fatal error if it failed
+func MustReveal(x string) string {
+	out, err := Reveal(x)
+	if err != nil {
+		log.Fatalf("Reveal failed: %v", err)
+	}
+	return out
+}
+
+func main() {
+	fmt.Println(MustReveal("YOUR PSEUDO-ENCRYPTED PASSWORD HERE"))
+}
+
+```
 
 
 
@@ -64,3 +151,10 @@ ZOZOMARINE STADIUM 和 CHIBA LOTTE MARINE
 
 然后记得把 gold subscription 取消掉。
 
+
+
+## Heilang
+
+直接正则替换 `|` 为 `]=a[`
+
+难看，但是能跑
