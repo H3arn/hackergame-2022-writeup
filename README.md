@@ -1,6 +1,6 @@
 # Hackergame 2022 7-Day Trial
 
-我一个什么都不会的垃圾，也来玩玩看好了。
+我一个什么都不会的也来玩玩看好了。
 
 说了只做签到，然后心痒痒，就想着继续做吧。
 
@@ -256,7 +256,7 @@ with requests.session() as session:
 
 
 
-## 运维不善
+## 垃圾运维
 
 ~~revisions 关了却能看 diff 是怎么回事~~
 
