@@ -1,10 +1,10 @@
-# Hackergame 2022 7-Day Trial
-
-我一个什么都不会的也来玩玩看好了。
+# 水银 2022 7-Day Trial
 
 说了只做签到，然后心痒痒，就想着继续做吧。
 
 然后发现我就是个啥都不会的跳梁小丑，真是丢人现眼。
+
+内含大量吐槽，请见源码中注释掉的部分。
 
 
 
@@ -20,7 +20,7 @@
 
 ## 举办猫咪问答喵谢谢喵
 
-\*\*\*，真难找，我就找到三个。
+\*\*\*，真难找，我只找到三个。
 
 
 
@@ -40,6 +40,10 @@
 
 解压，得到 `user` 家目录。然后用 vscode 打开文件夹，直接搜索 "flag". 
 
+<!--其实是找了大半天才找到 rclone 那个，然后才想到用 vscode（-->
+
+<!--真是找死我了（吐血-->
+
 
 
 ### Vscode
@@ -54,7 +58,7 @@
 
 丢进 [这个](https://go.dev/play/p/IcRYDip3PnE) 里面的程序，改掉 `YOUR PSEUDO-ENCRYPTED PASSWORD HERE` 就能得到结果。
 
-防止原链接失效，拷贝程序源码如下：
+考虑到原链接随时可能失效，拷贝程序源码如下：
 
 ```go
 package main
@@ -133,57 +137,33 @@ func main() {
 
 
 
-## 我草 恶俗啊
+## 真甜
 
-### 照片分析
+<!--发现自己不会用正则表达式去替换，笑死，那就-->直接替换 `|` 为 `]=a[`
 
-用 gwenview 或者 `jhead -v` 得到 exif 信息
-
-Exif Version 2.31
-
-Manufacturer Xiaomi
-
-ISO Speed Ratings 84
-
-Date and Time 2022/05/14 18:23:35
-
-Flash No, complusory（强制关闭）
-
-
-
-### 社工实践
-
-放大照片，可看见前方的圆形建筑有字 ZOZOMARINE STADIUM 和 CHIBA LOTTE MARINE. 搜索后可知与“千葉海洋球場”有关。从拍摄角度能推测拍摄者所在建筑相对于球场的方向，顺带对比图中的道路，估计其位于  APA度假飯店東京灣幕張  ，邮政编号得到 261-0021
-
-已知该机器是小米的，搜索 gsmarena 对比各代机型（对不起我真的认不得国内那么多的机器）猜测为 Redmi 9T, 屏幕分辨率得到 2340x1080
-
-航班的话，观察照片中飞机的姿态，结合拍摄者所在位置和拍摄角度，判断这架飞机大致是朝北方飞行。尚能目视，那么高度不算太高。且附近也没有其他飞机。
-
-想回溯那么久以前的航班只能靠 flightradar 了。先骗个 7-day gold trial, 然后回溯一下照片拍摄时的空域情况。注意，exif 中还有时区信息 +0900, 之前的时间是当地时间，需要换算成 UTC. 调至 2022-05-14 09:23:35 UTC 不难得知航班为 NH683 (HND -> HIJ)
-
-拿到 flag, 把 gold subscription 取消掉。
-
-
-
-## 查找 替换
-
-直接正则替换 `|` 为 `]=a[`
-
-难看，但是 py 语法糖，能跑
+难看，但这 py 语法葡萄糖真甜~~，除杂都省了，直接饮用~~。
 
 
 
 ## 我是机器人
 
-上来跳转是怎么回事？草
+上来就跳转是怎么回事？草
 
-手速拉满，总算看到了里面有个 `<script>`, 还有一个 `<form>` 用来放三个计算题。换了 noscript 然后没啥用，1 秒的限制在后端也有。
+~~手速拉满，~~换了 noscript 终于不跳了，总算看到了里面有个一秒就提交的 `<script>`, 还有一个 `<form>` 用来放三个计算题。但还是没啥用，1 秒的限制在后端也有。
 
-用 curl 浏览器被拦住了，忘了还有 cookie. 我也不想折腾 shell script 了，那就干脆 py request 模拟。（连 request 都不会装，我紫菜吧）
+<!--用 curl ~~浏览器~~被拦住了，忘了还有 cookie. 也不想折腾 shell script 了，-->那就干脆 py request 模拟~~，这样够 bot 了吧（~~<!--（咱安装 request 都被 pip 毒打，还是早点紫菜吧）-->
 
-继续开 noscript, 开 F12 去 network 里拿个 cookie 格式，然后随便提交一个答案，看一下 form 格式。
+<!--继续开 noscript, 开 F12 去 network 里拿个 cookie 格式，然后随便提交一个答案，看一下 form data 格式。-->
 
-然后开始现学现卖 python 灵车。
+然后我一个根本不会写代码的，开始搭建 python 危房。
+
+<!--~~这里窝借用一下[某位 PGP 算号神人的骚话](https://www.douban.com/note/763978955)：~~ -->
+
+<!--~~ > JavaScript 就这个好，给点星星之火就可以燎原。不光野，还浪，容易上手，以至于不管是谁都能上去霍霍两下 ~~ -->
+
+<!--~~对于 py 大概也是如此（（~~ -->
+
+<!--尝试 py 的时候才发现原来用无头浏览器（比如 py requests / curl）就不怕 script 了。flag 里也这么说（（-->
 
 三个计算题包装在 `<label>` 中，格式如下：
 
@@ -191,15 +171,17 @@ Flash No, complusory（强制关闭）
 <label for="captcha2">258033923847200268802989441771128447507+193408310580629933415510529078909027659 的结果是？</label>
 ```
 
-用[正则模拟器](https://regex101.com)搞个表达式，套一下元素，拿到计算题。
+掏出[正则模拟器](https://regex101.com)随便糊个表达式，用 Match Group 把那俩数字拎出来。
 
 ```regex
 \<label for\=\"captcha(\d)\"\>(\d+)\+(\d+)(.*)\<\/label\>
 ```
 
-然后把得到的数据提取、转换格式、计算、输出、发送。
+然后转换格式、计算、送走（
 
-记得换掉 `SESSION_VALUE`
+访问题目时需要使用 cookie, 也即填写此处 `session` 的值。用浏览器开一下题目，F12 就能拿到。
+
+完整代码如下：
 
 ```python
 # works on Python 3.10.8
@@ -224,13 +206,14 @@ with requests.session() as session:
 
     # regular expression to match the HTML element. Group 2 and 3 are the target numbers. 
     regexp = re.compile("\<label for\=\"captcha(\d)\"\>(\d+)\+(\d+)(.*)\<\/label\>") 
-    # find all matches
+    # find all matches (actually 3)
     match = re.findall(regexp, r_text) 
     # print(match, "\n")
 
+    # define a list to store answers
     ans = {}
     for i in range(0,3):
-        # convert data type and calculate the answer. 
+        # (forcibly) convert data type and calculate the answer. 
         ans[i] = int(match[i][1]) + int(match[i][2]) 
         # print(int(match[i][0]), " ", ans[i], "\n")
 
@@ -250,26 +233,117 @@ with requests.session() as session:
 
 ```
 
-搞定，成功证明自己是 bot. Flag 真搞。
+搞定，成功证明自己是 bot. 
+
+~~果然 bot 的活还是得交给 bot, 想到最近的 AI 画画，心情复杂（（~~
 
 ![](http://202.38.93.111:10047/static/xcaptcha-success.png)
 
 
 
+## 我草 恶俗啊
+
+### 照片分析
+
+用 gwenview 或者 `jhead -v` 得到 exif 信息
+
+```
+Exif Version:       2.31
+Manufacturer:       Xiaomi
+ISO Speed Ratings:  84
+Date and Time:      2022/05/14 18:23:35
+Flash:              No, complusory (=> OFF)
+```
+
+
+
+### 社工实践
+
+放大照片，可看见前方的圆形建筑有字 ZOZOMARINE STADIUM 和 CHIBA LOTTE MARINE. 搜索后可知与“千葉海洋球場”有关。从拍摄角度能推测拍摄者所在建筑相对于球场的方向，顺带对比图中的道路，估计其位于  APA度假飯店東京灣幕張  ，邮政编号 261-0021.
+
+已知该机器是小米的，搜索 gsmarena 对比各代机型<!--（对不起我真的认不得那么多的机器）-->猜测为 Redmi 9T, 屏幕分辨率 2340x1080.
+
+航班的话，观察照片中飞机的姿态，结合拍摄者所在位置和拍摄角度，判断这架飞机大致是朝北方飞行。尚能目视，那么高度不算太高。且附近也没有其他飞机。
+
+想回溯那么久以前的航班只能靠 flightradar24 了。先骗个 7-day gold trial, 然后回溯一下照片拍摄时的空域情况。注意，exif 中还有时区信息 +0900, 之前的时间是当地时间，需要换算成 UTC. 调至 2022-05-14 09:23:35 UTC 不难得知航班为 NH683 (HND -> HIJ)
+
+拿到 flag, 别忘了把 gold subscription 取消掉。
+
+
+
+## 胶衣 PLAY
+
+### 纯文本
+
+咕咕搜索 "Latex include other file in the file system"
+
+然后在[这里](https://tex.stackexchange.com/questions/246/when-should-i-use-input-vs-include)看到了大佬们的指点。于是：
+
+```latex
+\input{/flag1}
+```
+
+然后输出了第一个 flag. 记得补上花括号。
+
+
+
+### 特殊字符混入
+
+混进去的两个都是 escape char, 一时有点头大。
+
+搜了 regex, 没有；搜到 verbatim, 不行。
+
+脚本里面有 `-no-shell-escape` 没法干坏事。真麻了。
+
+在搜 escape char 的时候，[摸到](https://tex.stackexchange.com/questions/543565/setting-the-backslashs-catcode) `\catcode` 这个东西。心灰意冷之下试了试居然能用。
+
+又在学习胶衣基本语法的时候看到了 [\\\\ 的用法](https://www.overleaf.com/learn/latex/Learn_LaTeX_in_30_minutes#Paragraphs_and_new_lines)。拿出来试了下还真能用，那就可以在 form data 里面塞入多行内容了。
+
+那就好办了。
+
+把 `#` 和 `_` 的 catcode 改成 12 就行了。
+
+```latex
+\catcode`\_=12 \\ \catcode`\#=12 \\ \input{/flag2} 
+```
+
+补上花括号，搞定。
+
+
+
 ## 垃圾运维
 
-~~revisions 关了却能看 diff 是怎么回事~~
+<!--~~revisions 关了却能看 diff 是怎么回事~~-->
 
-简单学习了一下 dokuwiki 的官方 wiki, 发现除了 revision 还有 diff 这个好东西。
+又没什么登录的线索，只好简单学习了一下 dokuwiki 的官方 wiki, 发现除了 revision 还有 [diff](https://www.dokuwiki.org/diff) 这个好东西。
 
-~~（换我直接把源站下线）~~
+<!--（什么垃圾运维，换我直接把源站下线）-->
 
 在 URL 末尾追加 `&do=diff` 即可打开 diff 页面，然后就能查看修改历史了。
 
 
 
-## 图层魔法
+## 工程1.psd
 
 大概是个 gerber file. 
 
 用 gerbv 导入所有设计图，逐个查看后发现 `ebaz_sdr-F_Cu` 好像有类似 flag 的玩意印在上面，后面被一些东西挡住了。鼠标选中直接删掉就能看到 flag. 
+
+
+
+## 浇窝 WebGL 好不好嘛
+
+折腾了半天也不是很懂。<!--还把我的电脑跑崩了好几次，这就是现代科技吗（-->
+
+网页结构很简单，<!--很适合在本地跑，我也确实是这样做的。-->咱猜是要修改那四个 js. 
+
+WebGL 确实也看不大懂，搜了下里面的函数名字，大概是用光线追踪写的玩具。
+
+但里面最让我感到奇怪的就是五个 SDF. 前四个那么大那么沉，而最后那个又那么短，结合图像中固定的 flag 字样，还有那个模糊的后半段，很难不联想到前四个 SDF 就是把字母画出来，最后那个负责画一个矩形挡住 flag. 
+
+看了下只有 `sceneSDF` 中调用过这五个函数。
+
+直接把其中的 t5 被赋值/调用的地方改成随便一个浮点数（比如 1e1 之类的常量，或者其他 float 变量）就行了。
+
+重新渲染，就能看到 flag 了。
+
