@@ -20,7 +20,30 @@
 
 ## 举办猫咪问答喵谢谢喵
 
-\*\*\*，真难找，我只找到三个。
+\*\*\*，真难找，我~~只找到三个~~ upd：六个答案已经都搞到了。
+
+1. 搜了一下 Google 上的结果，第一次出现这个战队是在 https://cybersec.ustc.edu.cn/2019/0624/c15751a387753/page.htm , 但这并没有什么用。然后估计一下也不可能在 2012 年以前成立，那就和第六问一样，把答案枚举出来就行~~，反正最多才 96 种可能，连第六问都不如~~。
+
+```diff
+-days = [0,31,28,31,20,31,30,31,31,30,31,30,31] # to make datetime lib happy
+-year = 2003
+-while year < 2004:
++day = 1 # to make datetime.datetime() happy
++year = 2012
++while year < 2021:
+
+-        day = 1
+-        while day <= days[month]:
+
+-                    'q1': "",
++                    'q1': date.strftime("%Y-%m"), # yyyy-mm
+
+-                    'q6': date.strftime("%Y-%m-%d") # yyyy-mm-dd
++                    'q6': "" 
+
+-            day = day + 1
+
+```
 
 
 
@@ -32,7 +55,76 @@
 
 
 
-4. 在 torvalds/linux.git 中的 commit message 里搜索 `CVE-2021-4034` 即可得知唯一符合的 commit hash 为 `dcd46d897adb70d63e025f175a00a89797d31a43`
+4. 在 https://github.com/torvalds/linux.git 中的 commit message 里搜索 `CVE-2021-4034` 即可得知唯一符合的 commit hash 为 `dcd46d897adb70d63e025f175a00a89797d31a43`
+
+
+
+5. 提示说是 1996 年注册的域名，而且有且只有六个字母，就想到 Z 佬的 GPG uid 里有个 sdf.org 的号，结合当时和群友聊到这个站的历史和会员的难以获取，就瞎猜了一个 sdf.org 居然对了
+
+
+
+6. 浅浅找了下妮可网络通的内容也只有 https://netfee.ustc.edu.cn/faq/index.html#fee , 然后在 wayback machine 上也没有找到 2012 年以前的记录。心一冷，直接谷歌搜 “网络通 ustc” 然后把时间调到 2009-01-01 和 2011-01-01 之间。好家伙，给我碰上了 https://www.ustc.edu.cn/info/1057/4931.htm . 其中提到的 “网字〔2003〕1号《关于实行新的网络费用分担办法的通知》” 没法在公网搜索引擎上找到了，似乎。
+
+   想到大狐狸苏卡卡酱以前打 hg 的绝招，我也来试试枚举吧，拿着做 Xcaptcha 时候写的机器人改两笔就行了。从 2003-01-01 到 2003-12-31 总共才 365 个可能，这种数据规模还不到市面常见 CC 攻击的零头。
+
+```python
+# works on Python 3.10.8
+
+import requests 
+import re 
+import time
+import datetime
+
+# set the URL
+url = 'http://202.38.93.111:10002'  
+# set a valid cookie
+cookies = {
+    'DOKU_PREFS': 'list%23thumbs',
+    'session': 'SESSION_VALUE'
+} 
+
+# only try one targeted question, as is seen in form_data
+regexp = re.compile("(你只答对了 1 题喵，不够喵！)") 
+
+days = [0,31,28,31,20,31,30,31,31,30,31,30,31] # to make datetime lib happy
+year = 2003
+while year < 2004:
+    month = 1
+    while month < 13:
+        day = 1
+        while day <= days[month]:
+            # establish a session
+            time.sleep(1)
+            with requests.session() as session: 
+                date = datetime.datetime(year, month, day)
+                # fill the form data
+                form_data = {
+                    'q1': "",
+                    'q2': "",
+                    'q3': "",
+                    'q4': "",
+                    'q5': "",
+                    'q6': date.strftime("%Y-%m-%d") # yyyy-mm-dd
+                } 
+                # for debug purpose
+                print(form_data)
+
+                # send the data 
+                response = session.post(url, data=form_data, cookies=cookies) 
+                # Error handler
+                if (response.status_code!=200):
+                    print("HTTP ", response.status_code)
+                    exit(1)
+                # Here comes the flag
+                match = re.findall(regexp, response.text)
+                if len(match):
+                    print(match)
+                    exit(0) # exit on success
+            day = day + 1
+        month = month + 1
+    year = year + 1
+
+```
 
 
 
