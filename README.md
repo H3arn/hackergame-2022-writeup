@@ -344,7 +344,7 @@ Exif Version:       2.31
 Manufacturer:       Xiaomi
 ISO Speed Ratings:  84
 Date and Time:      2022/05/14 18:23:35
-Flash:              No, complusory (=> OFF)
+Flash:              No, complusory
 ```
 
 
@@ -423,6 +423,105 @@ Flash:              No, complusory (=> OFF)
 
 
 
+## XSS 难到想死
+
+从 bot 的代码来看，flag 就在 cookie 里面。只要拿到 cookie 就行了。
+
+先是想往 return 的结果里面下毒，显然没成。
+
+然后一直没思路，倒数第二天晚上终于想到，既然是想执行代码，那就考虑 XSS, 可是自己也不会 XSS 啊，对 js 也是一窍不通；不过看了一下里面的代码，搜了一下，判断出分享链接里的 result 只是把 `score:name` 编码成 base64 得到，再次打开时则会解码，然后用 `document.querySelector().innerHTML` 去替换对应元素里面的内容。
+
+那就可以直接构造了，把想要植入到 HTML 里面的内容按照格式写好编码就行。数字在前，那就尽可能只改 name. 
+
+一开始是想直接放个 script 去改变量、改网页，然后但是发现换进去的 inline script 根本没被执行，后来才知道 script 的执行也有顺序。另外发现如果 base64 字串里面出现 `+` 就会让服务器 500. 
+
+然后想往里面塞 img, 把 cookie 放在 URL query string 里面偷走，然后用自己的服务器去收，结果发现死在同样的问题上，如果要把变量塞进 src link 里面就要用 script,  但是用 script 就要面对执行顺序的问题。
+
+心灰意冷之下搜了 "inner inject javascript", 找到了 StackOverFlow 帖子 `Executing <script> elements inserted with .innerHTML` 里面的一个[回答](https://stackoverflow.com/a/3714367)。简单说就是用一个 img 元素在 onload 的时候执行 js 代码。这样就会等到后面的 script 把元素替换好以后才开始执行代码。
+
+那就很简单了，直接从 greeting 和 score 里面挑一个换成 `document.cookie` 就行了。
+
+还是半天都不行，然后 F12 发现 `document.querySelector("#greeting")` 的第一个双引号后面居然被加了空格...从高亮来看似乎是和 onload 的双引号冲突了... escape char 也无效。
+
+真麻了，凭着自己以前折腾博客的经验，大概试了一下用单引号去换：
+
+```html
+0:<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onload='document.querySelector("#greeting").innerHTML=document.cookie;'>
+```
+
+base64 以后
+
+```
+/share？result=MDo8aW1nIHNyYz0iZGF0YTppbWFnZS9naWY7YmFzZTY0LFIwbEdPRGxoQVFBQkFJQUFBQUFBQVAvLy95SDVCQUVBQUFBQUxBQUFBQUFCQUFFQUFBSUJSQUE3IiBvbmxvYWQ9J2RvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoIiNncmVldGluZyIpLmlubmVySFRNTD1kb2N1bWVudC5jb29raWU7Jz4=
+```
+
+成了。
+
+然后丢进 web shell, 得到的 greeting 就变成 cookie 的内容，也就是 flag 了。
+
+真难。
+
+
+
+## 这酒有毒
+
+### flag1
+
+手生了不会写 C 了，那就直接搜一下 C 语言怎么读文件吧（
+
+https://www.geeksforgeeks.org/c-program-to-read-contents-of-whole-file/
+
+直接跑，然后 server 会绝赞报错。
+
+```
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 90: invalid start byte
+```
+
+然后发现 do-while 会把 EOF 也输出到 stdout, 那避免掉就行。
+
+```C
+// C program to implement
+// the above approach
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+ 
+// Driver code
+int main()
+{
+    FILE* ptr;
+    char ch;
+ 
+    // Opening file in reading mode
+    ptr = fopen("/flag1", "r");
+ 
+    if (NULL == ptr) {
+        printf("file can't be opened \n");
+    }
+ 
+    printf("content of this file are \n");
+ 
+    // Printing what is written in file
+    // character by character using loop.
+    ch = fgetc(ptr);
+    while (ch != EOF) {
+        printf("%c", ch);
+        ch = fgetc(ptr);
+        // Checking if character is not EOF.
+        // If it is EOF stop eading.
+    } 
+ 
+    // Closing the file
+    fclose(ptr);
+    return 0;
+}
+
+```
+
+没想到这 150 分就和白给一样。
+
+
+
 ## 浇窝 WebGL 好不好嘛
 
 折腾了半天也不是很懂。<!--还把我的电脑跑崩了好几次，这就是现代科技吗（-->
@@ -439,3 +538,10 @@ WebGL 确实也看不大懂，搜了下里面的函数名字，大概是用光�
 
 重新渲染，就能看到 flag 了。
 
+
+
+## 数数
+
+### 这么简单我闭眼都可以
+
+枚举，从 0000 开始试，试到 1000 碰上了，成功。
