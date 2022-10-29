@@ -423,7 +423,55 @@ Flash:              No, complusory
 
 
 
-## XSS 难到想死
+## 黑色高级自动机
+
+随便 HexDump 一下就能看见 flag 这四个字母，可那有什么用呢，又不是真的 flag, 旁边还有神户小鸟呢（（
+
+不过有个提示，好像说不需要直接啃 flag, 看来还得骗出来才行？
+
+<!--没用过 IDA 是真的痛苦，只好费劲下个破解的 Pro 版，破解版又信不过，还要配个虚拟机。-->
+
+<!--顺便后悔一下没有好好学汇编，一开始对着满屏幕的汇编，真的会晕过去的。-->
+
+<!--不过好在搜到了，按一下 F5 就基本能把晦涩的汇编变成 C 的代码了。-->
+
+<!--后来才意识到依旧没有啥用，还是要对着汇编去改。-->
+
+首先尝试运行，“残忍夺取”的按钮居然会躲着鼠标走，实在是很有上古时代恶搞程序的感觉了。
+
+经过一番艰苦的搜索，在某个角落里找到了这一极具特色的玩意（
+
+从反汇编的结果来看，主程序的入口应该在 `_WinMain_` 处，在里面翻了一圈以后发现和 `pfnSubclass` 里面的东西很像。
+
+```C
+
+```
+
+触发这玩意的条件是 `uMsg == 512` . 搜了一下，似乎是一种叫做 [windows message](https://learn.microsoft.com/en-us/windows/win32/winmsg/about-messages-and-message-queues#windows-messages) 的玩意，在 winehq 上有比较完整的[取值列表](https://wiki.winehq.org/List_Of_Windows_Messages)。查表，看起来真的是鼠标移动触发，那就删掉吧。
+
+咋办呢？看了下汇编代码，把成立条件改成等于 uMsg==0 就好了。
+
+IDA patch 改起来太慢，干脆用 HxD 改完开跑，按钮确实不飞了。
+
+接下来就是骗 flag 了。把 flag 骗出来主要靠 `sub_401510` 函数。想要到达输出 flag 的程序段需要经过三次 if. 第一次是根据 `Msg` 也即上文的 `uMsg`, 第二次是根据 `d3`, 第三次是根据 `lParam`. 
+
+要素给的很到位捏：
+
+```C
+
+```
+
+再次按下按钮准备残忍夺取 flag, 怎料突然弹出窗口，说我不是“超级管理员”。窗口大小很接近 300x100, 看来 `Msg` 是 1 了，那就直接把第二处比较的数字从 111h 改成 1 就行，反正最后一个 case 分支没有跳转入口。
+
+然后是改 `d3` 和 `lParam`. 再次尝试进去的时候窗口空白，从逻辑关系图看，大概是进了 nop 了。那就把跳转条件都反过来就行。
+
+然后成功了，与预期一致的消息框以及输出的 flag 文件。打开一看，应该不会是假 flag. 成功了。
+
+真的要吐出来了，还好当时没有在强行逆向解码函数的路上走太远...准确说，看见里面的某个不确定数组以后就放弃了。
+
+
+
+## XSS 好难，想死死
 
 从 bot 的代码来看，flag 就在 cookie 里面。只要拿到 cookie 就行了。
 
@@ -433,23 +481,23 @@ Flash:              No, complusory
 
 那就可以直接构造了，把想要植入到 HTML 里面的内容按照格式写好编码就行。数字在前，那就尽可能只改 name. 
 
-一开始是想直接放个 script 去改变量、改网页，然后但是发现换进去的 inline script 根本没被执行，后来才知道 script 的执行也有顺序。另外发现如果 base64 字串里面出现 `+` 就会让服务器 500. 
+<!--一开始是想直接放个 script 去改变量、改网页，然后但是发现换进去的 inline script 根本没被执行，后来才知道 script 的执行也有顺序。另外发现如果 base64 字串里面出现 `+` 就会让服务器 500.--> 
 
-然后想往里面塞 img, 把 cookie 放在 URL query string 里面偷走，然后用自己的服务器去收，结果发现死在同样的问题上，如果要把变量塞进 src link 里面就要用 script,  但是用 script 就要面对执行顺序的问题。
+<!--然后想往里面塞 img, 把 cookie 放在 URL query string 里面偷走，然后用自己的服务器去收，结果发现死在同样的问题上，如果要把变量塞进 src link 里面就要用 script,  但是用 script 就要面对执行顺序的问题。-->
 
 心灰意冷之下搜了 "inner inject javascript", 找到了 StackOverFlow 帖子 `Executing <script> elements inserted with .innerHTML` 里面的一个[回答](https://stackoverflow.com/a/3714367)。简单说就是用一个 img 元素在 onload 的时候执行 js 代码。这样就会等到后面的 script 把元素替换好以后才开始执行代码。
 
-那就很简单了，直接从 greeting 和 score 里面挑一个换成 `document.cookie` 就行了。
+那就很简单了，直接把<!--从-->整个 greeting <!--和 score 里面挑一个-->换成 cookie 就行了。
 
-还是半天都不行，然后 F12 发现 `document.querySelector("#greeting")` 的第一个双引号后面居然被加了空格...从高亮来看似乎是和 onload 的双引号冲突了... escape char 也无效。
+<!--还是半天都不行，然后 F12 发现 `document.querySelector("#greeting")` 的第一个双引号后面居然被加了空格...从高亮来看似乎是和 onload 的双引号冲突了... escape char 也无效。-->
 
-真麻了，凭着自己以前折腾博客的经验，大概试了一下用单引号去换：
+<!--真麻了，凭着自己以前折腾博客的经验，大概试了一下用单引号去换：-->
 
 ```html
 0:<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onload='document.querySelector("#greeting").innerHTML=document.cookie;'>
 ```
 
-base64 以后
+base64 以后，补全 path
 
 ```
 /share？result=MDo8aW1nIHNyYz0iZGF0YTppbWFnZS9naWY7YmFzZTY0LFIwbEdPRGxoQVFBQkFJQUFBQUFBQVAvLy95SDVCQUVBQUFBQUxBQUFBQUFCQUFFQUFBSUJSQUE3IiBvbmxvYWQ9J2RvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoIiNncmVldGluZyIpLmlubmVySFRNTD1kb2N1bWVudC5jb29raWU7Jz4=
@@ -459,7 +507,7 @@ base64 以后
 
 然后丢进 web shell, 得到的 greeting 就变成 cookie 的内容，也就是 flag 了。
 
-真难。
+好难，想死。
 
 
 
@@ -518,7 +566,7 @@ int main()
 
 ```
 
-没想到这 150 分就和白给一样。
+没想到这 150 分就和白给一样。~~然后 flag2 就卡住了~~
 
 
 
