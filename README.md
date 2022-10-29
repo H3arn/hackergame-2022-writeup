@@ -601,7 +601,7 @@ LRESULT __stdcall sub_401510(HWND hWndParent, UINT Msg, WPARAM a3, LPARAM lParam
 
 然后成功了，与预期一致的祝贺消息框以及输出的 flag_machine.txt. 打开一看，应该不会是假 flag. 骗到了。
 
-当时没有在强行逆向解码函数的路上走太远...准确说，看见里面的某个不确定数组以后就放弃了，没想到真的单独拿出来跑。
+当时没有在强行逆向解码函数的路上走太远...准确说，看见里面的某个不确定数组以后就放弃了，没想到真能单独拿出来跑。
 
 
 
@@ -611,7 +611,7 @@ LRESULT __stdcall sub_401510(HWND hWndParent, UINT Msg, WPARAM a3, LPARAM lParam
 
 先是想往 return 的结果里面下毒，显然没成。
 
-然后一直没思路，倒数第二天晚上终于想到，既然是想执行代码，那就考虑 XSS, 可是自己也不会 XSS 啊，对 js 也是一窍不通；不过看了一下里面的代码，搜了一下，判断出分享链接里的 result 只是把 `score:name` 编码成 base64 得到，再次打开时则会解码，用冒号切开得分和名字，然后用 `document.querySelector().innerHTML` 去替换对应元素里面的内容。
+然后一直没思路，倒数第二天晚上终于想到，既然是想执行代码，那就考虑 XSS, 可是自己也不会 XSS 啊，对 js 也是一窍不通；不过看了一下里面的代码，搜了一下，判断出分享链接里的 result 只是把 `score:name` 编码成 base64, 再次打开时则会解码，得分和名字用冒号切开，然后用 `document.querySelector().innerHTML` 去替换对应元素里面的内容。
 
 那就可以直接构造了，把想要植入到 HTML 里面的内容按照格式写好编码就行。数字在前，那就尽可能只改 name. 
 
@@ -627,7 +627,7 @@ LRESULT __stdcall sub_401510(HWND hWndParent, UINT Msg, WPARAM a3, LPARAM lParam
 
 还是半天都不行，然后 F12 发现 `document.querySelector("#greeting")` 的第一个双引号后面居然被加了空格...从高亮来看似乎是和 onload 的双引号冲突了... escape char 也无效。
 
-真麻了，凭着自己以前折腾博客的经验，大概试了一下用单引号去换：
+真麻了，凭着自己以前折腾博客的经验，大概试了一下用单引号去换，设置成 0 分是防止出现加号。分数可以随意设置的。（当时要是早点意识到的话，就不用亲自算那五道题目了）
 
 ```html
 0:<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onload='document.querySelector("#greeting").innerHTML=document.cookie;'>
@@ -636,7 +636,7 @@ LRESULT __stdcall sub_401510(HWND hWndParent, UINT Msg, WPARAM a3, LPARAM lParam
 base64 以后，补全 path
 
 ```
-/share？result=MDo8aW1nIHNyYz0iZGF0YTppbWFnZS9naWY7YmFzZTY0LFIwbEdPRGxoQVFBQkFJQUFBQUFBQVAvLy95SDVCQUVBQUFBQUxBQUFBQUFCQUFFQUFBSUJSQUE3IiBvbmxvYWQ9J2RvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoIiNncmVldGluZyIpLmlubmVySFRNTD1kb2N1bWVudC5jb29raWU7Jz4=
+/share?result=MDo8aW1nIHNyYz0iZGF0YTppbWFnZS9naWY7YmFzZTY0LFIwbEdPRGxoQVFBQkFJQUFBQUFBQVAvLy95SDVCQUVBQUFBQUxBQUFBQUFCQUFFQUFBSUJSQUE3IiBvbmxvYWQ9J2RvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoIiNncmVldGluZyIpLmlubmVySFRNTD1kb2N1bWVudC5jb29raWU7Jz4=
 ```
 
 成了。
@@ -738,7 +738,7 @@ WebGL 确实也看不大懂，搜了下里面的函数名字，大概是用光�
 
 这应该是咱这辈子第一次打 CTF, 没有想到自己真的能拿到除了签到以外的那么多分数。
 
-只不过大部分都是 misc 和 web 的雕虫小技，没啥科技含量，窝基本是靠着 Google 一路走过来的，而且 Google 用得也很差（参见我的猫咪问答题解）；binary 和 math 也没怎么碰。虽然也学到了不少细碎的知识，却感觉还是没啥提升。看完官方题解才意识到我的认知还是太狭隘了，真得从头恶补才行。
+只不过大部分都是 misc 和 web 的雕虫小技，没啥科技含量，窝基本是靠着 Google 一路走过来的，而且 Google 用得也很差（见我的猫咪问答题解）；binary 和 math 也没怎么碰。虽然也学到了不少细碎的知识，却感觉还是没啥提升。看完官方题解才意识到我的认知还是太狭隘了，真得从头恶补才行。
 
 遗憾的是自己还是太麻木，把猜数字、OJ、轮盘赌和杯窗鹅影这几题给放掉了，本来是很好的一个学习 C 和 Linux 的机会。好在平台还会继续运行三个月，还可以慢慢折腾那些好玩的题目。
 
